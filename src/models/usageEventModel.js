@@ -12,11 +12,28 @@ class UsageEventModel {
     } catch (error) {
       // 23505 is the PostgreSQL error code for unique_violation
       if (error.code === '23505') {
-        // Return duplicate true, so service knows it was already processed
         return { event: null, isDuplicate: true };
       }
       throw error;
     }
+  }
+
+  static async getCurrentUsage(tenantId, periodStart, periodEnd) {
+    const { rows } = await db.query(
+      `SELECT type, SUM(quantity) as total_used 
+       FROM usage_events 
+       WHERE tenant_id = $1 
+         AND timestamp >= $2 
+         AND timestamp <= $3 
+       GROUP BY type`,
+      [tenantId, periodStart, periodEnd]
+    );
+    
+    const usage = { api_call: 0, ai_tokens: 0 };
+    rows.forEach(row => {
+      usage[row.type] = parseInt(row.total_used, 10) || 0;
+    });
+    return usage;
   }
 }
 

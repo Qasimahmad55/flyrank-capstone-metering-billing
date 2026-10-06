@@ -1,4 +1,5 @@
 const MeteringService = require('../services/meteringService');
+const QuotaService = require('../services/quotaService');
 
 class MeteringController {
   static async generate(req, res) {
@@ -17,6 +18,12 @@ class MeteringController {
         (simulate_tokens.fresh_input || 0) +
         (simulate_tokens.output || 0) +
         (simulate_tokens.reasoning || 0) : 100; // default 100 for dummy calls
+
+      // --- QUOTA ENFORCEMENT BOUNDARY ---
+      const quotaCheck = await QuotaService.checkQuota(tenantId, 1, totalTokens);
+      if (!quotaCheck.allowed) {
+        return res.status(quotaCheck.status).json({ error: quotaCheck.message });
+      }
 
       // Record API call usage
       const apiCallResult = await MeteringService.recordUsage(
