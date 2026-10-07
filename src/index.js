@@ -10,6 +10,7 @@ app.use(express.json());
 app.use('/api/plans', planRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/metering', require('./routes/meteringRoutes'));
+app.use('/api/checkout', require('./routes/checkoutRoutes'));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
