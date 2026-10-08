@@ -5,6 +5,9 @@ const tenantRoutes = require('./routes/tenantRoutes');
 
 const app = express();
 
+// Webhooks must be mounted BEFORE express.json() so they can receive the raw Buffer body
+app.use('/api/webhooks', require('./routes/webhookRoutes'));
+
 app.use(express.json());
 
 app.use('/api/plans', planRoutes);
