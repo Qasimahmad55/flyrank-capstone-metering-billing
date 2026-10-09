@@ -1,0 +1,3 @@
+run: "docker-compose up -d && npm install && npm run migrate up && npm run dev"
+seed: "curl -X POST http://localhost:3000/api/plans/seed"
+base_url: "http://localhost:3000"
