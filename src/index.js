@@ -14,6 +14,7 @@ app.use('/api/plans', planRoutes);
 app.use('/api/tenants', tenantRoutes);
 app.use('/api/metering', require('./routes/meteringRoutes'));
 app.use('/api/checkout', require('./routes/checkoutRoutes'));
+app.use('/api/usage', require('./routes/usageRoutes'));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

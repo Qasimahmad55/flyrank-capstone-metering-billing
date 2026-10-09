@@ -29,9 +29,16 @@ class UsageEventModel {
       [tenantId, periodStart, periodEnd]
     );
     
-    const usage = { api_call: 0, ai_tokens: 0 };
+    const usage = { api_call: 0, ai_tokens: 0, detailed: {} };
     rows.forEach(row => {
-      usage[row.type] = parseInt(row.total_used, 10) || 0;
+      const qty = parseInt(row.total_used, 10) || 0;
+      usage.detailed[row.type] = qty;
+      
+      if (row.type === 'api_call') {
+        usage.api_call += qty;
+      } else if (row.type.startsWith('ai_')) {
+        usage.ai_tokens += qty;
+      }
     });
     return usage;
   }

@@ -33,20 +33,36 @@ class MeteringController {
         1
       );
 
-      // Record AI token usage
-      const tokenResult = await MeteringService.recordUsage(
-        tenantId,
-        `${idempotencyKey}-tokens`,
-        'ai_tokens',
-        totalTokens
-      );
+      // Record AI token usage (Detailed breakdown for Money Math)
+      let tokenStatuses = {};
+      if (simulate_tokens) {
+        if (simulate_tokens.fresh_input) {
+          const res = await MeteringService.recordUsage(tenantId, `${idempotencyKey}-fresh`, 'ai_fresh_input', simulate_tokens.fresh_input);
+          tokenStatuses.fresh = res.status;
+        }
+        if (simulate_tokens.cached_input) {
+          const res = await MeteringService.recordUsage(tenantId, `${idempotencyKey}-cached`, 'ai_cached_input', simulate_tokens.cached_input);
+          tokenStatuses.cached = res.status;
+        }
+        if (simulate_tokens.output) {
+          const res = await MeteringService.recordUsage(tenantId, `${idempotencyKey}-output`, 'ai_output', simulate_tokens.output);
+          tokenStatuses.output = res.status;
+        }
+        if (simulate_tokens.reasoning) {
+          const res = await MeteringService.recordUsage(tenantId, `${idempotencyKey}-reasoning`, 'ai_reasoning', simulate_tokens.reasoning);
+          tokenStatuses.reasoning = res.status;
+        }
+      } else {
+        const res = await MeteringService.recordUsage(tenantId, `${idempotencyKey}-fresh`, 'ai_fresh_input', 100);
+        tokenStatuses.fresh = res.status;
+      }
 
       // We successfully return a dummy generative response
       res.status(200).json({
         response: `Simulated response for prompt: "${prompt}"`,
         metering: {
           api_call_status: apiCallResult.status,
-          token_status: tokenResult.status
+          token_status: tokenStatuses
         }
       });
     } catch (error) {
