@@ -18,15 +18,28 @@ class UsageController {
         sub.current_period_end
       );
 
-      // Execute Money Math
+      // Execute Base Money Math
       let totalMicroCents = 0;
       for (const [type, quantity] of Object.entries(usage.detailed)) {
         const rate = pricing.COST_PER_TOKEN_MICRO_CENTS[type] || 0;
         totalMicroCents += rate * quantity;
       }
       
-      // We store/present money as integers (cents). Micro-cents -> cents.
       const current_cost_cents = Math.floor(totalMicroCents / 1000000);
+
+      // --- OVERAGE MATH ---
+      let projected_overage_cents = 0;
+      const isPro = sub.plan_id === 'pro';
+      
+      if (isPro) {
+        const overageApiCalls = Math.max(0, usage.api_call - sub.api_call_limit);
+        const overageAiTokens = Math.max(0, usage.ai_tokens - sub.ai_token_limit);
+        
+        const overageApiCents = Math.floor((overageApiCalls * pricing.OVERAGE_RATES_MICRO_CENTS.api_call) / 1000000);
+        const overageAiCents = Math.floor((overageAiTokens * pricing.OVERAGE_RATES_MICRO_CENTS.ai_tokens) / 1000000);
+        
+        projected_overage_cents = overageApiCents + overageAiCents;
+      }
 
       res.json({
         period_start: sub.current_period_start,
@@ -40,7 +53,9 @@ class UsageController {
           limit: sub.ai_token_limit
         },
         detailed_tokens: usage.detailed,
-        current_cost_cents
+        base_cost_cents: current_cost_cents,
+        projected_overage_cents,
+        total_projected_cost_cents: current_cost_cents + projected_overage_cents
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

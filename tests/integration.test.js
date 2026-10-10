@@ -114,7 +114,8 @@ describe('Billing & Metering Engine Integration Tests', () => {
       expect(res.status).toBe(200);
       // Math: (350 * 1M) + (175 * 1M) + (1050 * 1M) + (1050 * 1M) = 2,625,000,000 micro-cents
       // Floor(2625000000 / 1000000) = 2625 cents ($26.25)
-      expect(res.body.current_cost_cents).toBe(2625);
+      expect(res.body.base_cost_cents).toBe(2625);
+      expect(res.body.projected_overage_cents).toBeDefined();
       
       // Verify detailed token tracking exists
       expect(res.body.detailed_tokens.ai_fresh_input).toBe(1000000);

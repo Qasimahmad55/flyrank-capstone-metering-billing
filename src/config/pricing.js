@@ -8,5 +8,11 @@ module.exports = {
     'ai_output': 1050,       // $10.50 per 1M tokens
     'ai_reasoning': 1050,    // Reasoning tokens count exactly as output tokens
     'api_call': 0            // Base API calls are included in the plan subscription
+  },
+  
+  // Overage fees for Pro plan users
+  OVERAGE_RATES_MICRO_CENTS: {
+    'api_call': 5000,        // $0.05 (5,000 micro-cents) per API call over the limit
+    'ai_tokens': 10000       // $10.00 (10,000 micro-cents) per 1M tokens over the limit, flat rate
   }
 };
