@@ -10,7 +10,7 @@ describe('Billing & Metering Engine Integration Tests', () => {
   const createTestTenant = async () => {
     const res = await request(app)
       .post('/api/tenants')
-      .send({ name: \`Test Tenant \${uuidv4()}\` });
+      .send({ name: `Test Tenant ${uuidv4()}` });
     return res.body.id;
   };
 
@@ -57,8 +57,8 @@ describe('Billing & Metering Engine Integration Tests', () => {
 
       // We cheat and directly inject 1000 usage events to reach the exact boundary quickly
       await db.query(
-        \`INSERT INTO usage_events (tenant_id, idempotency_key, type, quantity) 
-         VALUES ($1, $2, 'api_call', 1000)\`,
+        `INSERT INTO usage_events (tenant_id, idempotency_key, type, quantity) 
+         VALUES ($1, $2, 'api_call', 1000)`,
         [tenantId, uuidv4()]
       );
 
@@ -190,4 +190,3 @@ describe('Billing & Metering Engine Integration Tests', () => {
     });
   });
 });
-

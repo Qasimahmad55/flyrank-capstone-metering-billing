@@ -1,5 +1,6 @@
 const MeteringService = require('../services/meteringService');
 const QuotaService = require('../services/quotaService');
+const db = require('../db');
 
 class MeteringController {
   static async generate(req, res) {
@@ -11,8 +12,26 @@ class MeteringController {
         return res.status(400).json({ error: 'x-tenant-id and x-idempotency-key headers are required' });
       }
 
+      // Check if this idempotency key was already recorded (safe idempotency retry check)
+      const existing = await db.query(
+        'SELECT quantity FROM usage_events WHERE tenant_id = $1 AND idempotency_key = $2',
+        [tenantId, `${idempotencyKey}-api`]
+      );
+
+      const { prompt, simulate_tokens } = req.body || {};
+
+      if (existing.rows.length > 0) {
+        // The request was already executed and recorded previously; return mirrored response immediately without re-checking quota
+        return res.status(200).json({
+          response: `Simulated response for prompt: "${prompt || ''}"`,
+          metering: {
+            api_call_status: 'already_recorded',
+            token_status: { fresh: 'already_recorded' }
+          }
+        });
+      }
+
       // Simulated generative action workload
-      const { prompt, simulate_tokens } = req.body;
       const totalTokens = simulate_tokens ?
         (simulate_tokens.cached_input || 0) +
         (simulate_tokens.fresh_input || 0) +
@@ -59,7 +78,7 @@ class MeteringController {
 
       // We successfully return a dummy generative response
       res.status(200).json({
-        response: `Simulated response for prompt: "${prompt}"`,
+        response: `Simulated response for prompt: "${prompt || ''}"`,
         metering: {
           api_call_status: apiCallResult.status,
           token_status: tokenStatuses

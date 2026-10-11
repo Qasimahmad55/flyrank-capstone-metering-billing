@@ -2,21 +2,39 @@ const express = require('express');
 const config = require('./config');
 const planRoutes = require('./routes/planRoutes');
 const tenantRoutes = require('./routes/tenantRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
+const meteringRoutes = require('./routes/meteringRoutes');
+const checkoutRoutes = require('./routes/checkoutRoutes');
+const usageRoutes = require('./routes/usageRoutes');
+const invoiceRoutes = require('./routes/invoiceRoutes');
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
 
 const app = express();
 
 // Webhooks must be mounted BEFORE express.json() so they can receive the raw Buffer body
-app.use('/api/webhooks', require('./routes/webhookRoutes'));
+app.use('/webhooks', webhookRoutes);
+app.use('/api/webhooks', webhookRoutes);
 
 app.use(express.json());
 
+// Support standard paths as specified in capstone brief (/generate, /usage, /checkout)
+app.use('/generate', meteringRoutes);
+app.use('/usage', usageRoutes);
+app.use('/checkout', checkoutRoutes);
+app.use('/plans', planRoutes);
+app.use('/tenants', tenantRoutes);
+app.use('/invoices', invoiceRoutes);
+app.use('/subscriptions', subscriptionRoutes);
+
+// Support API prefixed paths (/api/...)
 app.use('/api/plans', planRoutes);
 app.use('/api/tenants', tenantRoutes);
-app.use('/api/metering', require('./routes/meteringRoutes'));
-app.use('/api/checkout', require('./routes/checkoutRoutes'));
-app.use('/api/usage', require('./routes/usageRoutes'));
-app.use('/api/invoices', require('./routes/invoiceRoutes'));
-app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/metering', meteringRoutes);
+app.use('/api/generate', meteringRoutes);
+app.use('/api/checkout', checkoutRoutes);
+app.use('/api/usage', usageRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -24,7 +42,7 @@ app.get('/health', (req, res) => {
 
 if (require.main === module) {
   app.listen(config.port, () => {
-    console.log(\`Server is running on port \${config.port}\`);
+    console.log(`Server is running on port ${config.port}`);
   });
 }
 

@@ -1,3 +1,13 @@
 run: "docker-compose up -d && npm install && npm run migrate up && npm run dev"
 seed: "curl -X POST http://localhost:3000/api/plans/seed"
+test: "npm test"
 base_url: "http://localhost:3000"
+endpoints:
+  metering: "/generate"
+  usage: "/usage"
+  checkout: "/checkout"
+  webhooks: "/webhooks/stripe"
+  tenants: "/tenants"
+  plans: "/plans"
+  invoices: "/invoices/current"
+  subscriptions: "/subscriptions"

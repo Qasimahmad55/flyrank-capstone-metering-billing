@@ -7,7 +7,7 @@ class SubscriptionModel {
        FROM subscriptions s
        JOIN plans p ON s.plan_id = p.id
        WHERE s.tenant_id = $1
-       ORDER BY s.current_period_end DESC
+       ORDER BY CASE WHEN s.status = 'active' THEN 0 ELSE 1 END, s.current_period_end DESC
        LIMIT 1`,
       [tenantId]
     );

@@ -53,6 +53,7 @@ class UsageController {
           limit: sub.ai_token_limit
         },
         detailed_tokens: usage.detailed,
+        current_cost_cents: current_cost_cents,
         base_cost_cents: current_cost_cents,
         projected_overage_cents,
         total_projected_cost_cents: current_cost_cents + projected_overage_cents

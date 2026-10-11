@@ -1,4 +1,5 @@
 const TenantModel = require('../models/tenantModel');
+const PlanService = require('./planService');
 const db = require('../db');
 
 class TenantService {
@@ -11,7 +12,9 @@ class TenantService {
   }
 
   static async createTenant({ name }) {
-    // In a real scenario, you'd create a Stripe customer here too
+    // Ensure default plans exist so foreign key constraint is always satisfied
+    await PlanService.seedDefaultPlans();
+
     const tenant = await TenantModel.create({ name });
     
     // Assign free plan by default

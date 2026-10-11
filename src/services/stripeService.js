@@ -36,8 +36,8 @@ class StripeService {
       mode: 'subscription',
       // We pass the tenantId in client_reference_id to easily identify it in the webhook
       client_reference_id: tenantId,
-      success_url: \`http://localhost:\${config.port}/success?session_id={CHECKOUT_SESSION_ID}\`,
-      cancel_url: \`http://localhost:\${config.port}/cancel\`,
+      success_url: `http://localhost:${config.port}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `http://localhost:${config.port}/cancel`,
     });
 
     return session;

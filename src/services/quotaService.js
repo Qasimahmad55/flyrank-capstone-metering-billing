@@ -31,14 +31,14 @@ class QuotaService {
 
     if (newApiTotal > sub.api_call_limit) {
       if (!isPro) {
-        return { allowed: false, status: 429, message: \`API call quota exceeded. Limit: \${sub.api_call_limit}, Requested total: \${newApiTotal}\` };
+        return { allowed: false, status: 429, message: `API call quota exceeded. Limit: ${sub.api_call_limit}, Requested total: ${newApiTotal}` };
       }
       // If Pro, they are allowed to go into overage
     }
 
     if (newTokenTotal > sub.ai_token_limit) {
       if (!isPro) {
-        return { allowed: false, status: 429, message: \`AI token quota exceeded. Limit: \${sub.ai_token_limit}, Requested total: \${newTokenTotal}\` };
+        return { allowed: false, status: 429, message: `AI token quota exceeded. Limit: ${sub.ai_token_limit}, Requested total: ${newTokenTotal}` };
       }
     }
 
@@ -54,13 +54,13 @@ class QuotaService {
 
     // Crossed 80% threshold
     if (currentPercent < 0.8 && newPercent >= 0.8) {
-      console.log(\`[ALERT] Tenant \${tenantId} has reached 80% of their \${resourceName} quota.\`);
+      console.log(`[ALERT] Tenant ${tenantId} has reached 80% of their ${resourceName} quota.`);
       // In a real system, you would enqueue a job to send an email alert here.
     }
 
     // Crossed 100% threshold
     if (currentPercent < 1.0 && newPercent >= 1.0) {
-      console.log(\`[ALERT] Tenant \${tenantId} has reached 100% of their \${resourceName} quota.\`);
+      console.log(`[ALERT] Tenant ${tenantId} has reached 100% of their ${resourceName} quota.`);
     }
   }
 }

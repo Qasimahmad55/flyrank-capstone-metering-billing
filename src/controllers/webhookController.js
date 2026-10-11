@@ -20,7 +20,7 @@ class WebhookController {
       event = stripe.webhooks.constructEvent(req.body, signature, config.stripeWebhookSecret);
     } catch (err) {
       console.error('Webhook signature verification failed:', err.message);
-      return res.status(400).send(\`Webhook Error: \${err.message}\`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     // 2. Deduplicate the event
@@ -33,7 +33,7 @@ class WebhookController {
     } catch (err) {
       if (err.code === '23505') {
         // Unique violation: We already processed this event. Return 200 immediately.
-        console.log(\`Webhook \${event.id} deduplicated.\`);
+        console.log(`Webhook ${event.id} deduplicated.`);
         return res.status(200).send('Event already processed.');
       }
       return res.status(500).send('Database error during deduplication.');
@@ -50,9 +50,9 @@ class WebhookController {
           if (tenantId) {
             // Upgrade tenant to Pro (Probe 3)
             await db.query(
-              \`UPDATE subscriptions 
+              `UPDATE subscriptions 
                SET plan_id = 'pro', stripe_subscription_id = $1, status = 'active'
-               WHERE tenant_id = $2\`,
+               WHERE tenant_id = $2`,
               [stripeSubscriptionId, tenantId]
             );
           }
@@ -63,9 +63,9 @@ class WebhookController {
           const status = subscription.status; // e.g., 'active', 'past_due', 'canceled'
           
           await db.query(
-            \`UPDATE subscriptions 
+            `UPDATE subscriptions 
              SET status = $1 
-             WHERE stripe_subscription_id = $2\`,
+             WHERE stripe_subscription_id = $2`,
             [status, subscription.id]
           );
           break;
@@ -74,15 +74,15 @@ class WebhookController {
           const subscription = event.data.object;
           // Mark as canceled or downgrade to free
           await db.query(
-            \`UPDATE subscriptions 
+            `UPDATE subscriptions 
              SET status = 'canceled' 
-             WHERE stripe_subscription_id = $1\`,
+             WHERE stripe_subscription_id = $1`,
             [subscription.id]
           );
           break;
         }
         default:
-          console.log(\`Unhandled event type \${event.type}\`);
+          console.log(`Unhandled event type ${event.type}`);
       }
 
       // 4. Return a 200 response to acknowledge receipt
