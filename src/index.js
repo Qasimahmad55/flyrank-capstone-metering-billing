@@ -16,6 +16,7 @@ app.use('/api/metering', require('./routes/meteringRoutes'));
 app.use('/api/checkout', require('./routes/checkoutRoutes'));
 app.use('/api/usage', require('./routes/usageRoutes'));
 app.use('/api/invoices', require('./routes/invoiceRoutes'));
+app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });

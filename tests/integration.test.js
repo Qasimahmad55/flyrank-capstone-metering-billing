@@ -147,5 +147,47 @@ describe('Billing & Metering Engine Integration Tests', () => {
       expect(res.body.total_formatted).toBeDefined();
     });
   });
+
+  describe('6. Mid-Cycle Proration Engine', () => {
+    it('should accurately calculate mid-cycle proration without floating point errors', async () => {
+      tenantId = await createTestTenant();
+
+      // Retrieve tenant subscription to find middle of cycle
+      const subRes = await db.query('SELECT * FROM subscriptions WHERE tenant_id = $1', [tenantId]);
+      const sub = subRes.rows[0];
+      const startMs = new Date(sub.current_period_start).getTime();
+      const endMs = new Date(sub.current_period_end).getTime();
+      const midPoint = new Date(startMs + (endMs - startMs) / 2);
+
+      // Request a preview at the exact midpoint
+      const previewRes = await request(app)
+        .post('/api/subscriptions/preview-proration')
+        .set('x-tenant-id', tenantId)
+        .send({
+          new_plan_id: 'pro',
+          simulated_date: midPoint.toISOString(),
+        });
+
+      expect(previewRes.status).toBe(200);
+      expect(previewRes.body.current_plan).toBe('free');
+      expect(previewRes.body.new_plan).toBe('pro');
+      // Pro is $20.00 (2000 cents). Half cycle remaining should charge $10.00 (1000 cents)
+      expect(previewRes.body.prorated_charge_cents).toBe(1000);
+      expect(previewRes.body.prorated_charge_formatted).toBe('$10.00');
+
+      // Now execute the actual upgrade
+      const upgradeRes = await request(app)
+        .post('/api/subscriptions/upgrade')
+        .set('x-tenant-id', tenantId)
+        .send({ new_plan_id: 'pro' });
+
+      expect(upgradeRes.status).toBe(200);
+      expect(upgradeRes.body.success).toBe(true);
+
+      // Verify the subscription in database was updated
+      const updatedSub = await db.query('SELECT * FROM subscriptions WHERE tenant_id = $1', [tenantId]);
+      expect(updatedSub.rows[0].plan_id).toBe('pro');
+    });
+  });
 });
 
