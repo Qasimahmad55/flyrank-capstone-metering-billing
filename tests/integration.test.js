@@ -122,4 +122,30 @@ describe('Billing & Metering Engine Integration Tests', () => {
       expect(res.body.detailed_tokens.ai_reasoning).toBe(1000000);
     });
   });
+
+  describe('5. Monthly Statement & Invoicing', () => {
+    it('should generate an itemized invoice statement with detailed line items', async () => {
+      tenantId = await createTestTenant();
+
+      // Record some usage
+      await request(app)
+        .post('/api/metering/generate')
+        .set('x-tenant-id', tenantId)
+        .set('x-idempotency-key', uuidv4())
+        .send({
+          prompt: 'Invoice item generation',
+          simulate_tokens: { fresh_input: 100000, output: 50000 }
+        });
+
+      const res = await request(app)
+        .get('/api/invoices/current')
+        .set('x-tenant-id', tenantId);
+
+      expect(res.status).toBe(200);
+      expect(res.body.statement_id).toMatch(/^INV-/);
+      expect(res.body.line_items.length).toBeGreaterThan(0);
+      expect(res.body.total_formatted).toBeDefined();
+    });
+  });
 });
+
