@@ -189,4 +189,14 @@ describe('Billing & Metering Engine Integration Tests', () => {
       expect(updatedSub.rows[0].plan_id).toBe('pro');
     });
   });
+
+  describe('7. Nightly Reconciliation Background Job', () => {
+    it('should successfully execute reconciliation audit without unhandled errors', async () => {
+      const res = await request(app).post('/api/jobs/reconcile');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.report).toBeDefined();
+      expect(res.body.report.started_at).toBeDefined();
+    });
+  });
 });
